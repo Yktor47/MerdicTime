@@ -108,7 +108,7 @@ export default function Dashboard() {
             type="month" 
             value={format(currentMonth, "yyyy-MM")}
             onChange={(e) => setCurrentMonth(new Date(e.target.value))}
-            className="p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#ed8022] outline-none"
+            className="p-3 border-2 border-[#123e7f] rounded text-[#123e7f] font-black text-xl focus:ring-2 focus:ring-[#ed8022] outline-none bg-white shadow-sm"
           />
           <button onClick={handleExport} className="px-4 py-2 bg-[#ed8022] hover:bg-[#ff6d00] text-white rounded shadow-sm font-medium transition-colors">
             Excel Export
@@ -118,11 +118,11 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#123e7f]">
             <div className="text-sm font-bold uppercase text-[#123e7f]">Gesamtarbeitszeit</div>
-            <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalWork)} h</div>
+            <div className="text-3xl font-black text-[#123e7f] font-[Poppins] mt-1">{formatTime(totalWork)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#123e7f]">
             <div className="text-sm font-bold uppercase text-[#123e7f]">Soll-Zeit Monat</div>
-            <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalTarget)} h</div>
+            <div className="text-3xl font-black text-[#123e7f] font-[Poppins] mt-1">{formatTime(totalTarget)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#ed8022]">
             <div className="text-sm font-bold uppercase text-[#ed8022]">Überstunden Monat</div>

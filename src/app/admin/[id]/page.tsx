@@ -127,11 +127,11 @@ export default function AdminUserDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#123e7f]">
-            <div className="text-sm font-semibold uppercase opacity-70">Gesamtarbeitszeit</div>
+            <div className="text-sm font-bold uppercase text-[#123e7f]">Gesamtarbeitszeit</div>
             <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalWork)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#123e7f]">
-            <div className="text-sm font-semibold uppercase opacity-70">Soll-Zeit Monat</div>
+            <div className="text-sm font-bold uppercase text-[#123e7f]">Soll-Zeit Monat</div>
             <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalTarget)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#ed8022]">

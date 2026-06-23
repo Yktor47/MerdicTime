@@ -98,12 +98,12 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
               onChange={(e) => setFormData({...formData, isVacation: e.target.checked})}
               className="w-4 h-4 accent-[#ed8022]"
             />
-            <label htmlFor="isVacation" className="font-medium text-gray-700">Urlaub</label>
+            <label htmlFor="isVacation" className="font-bold text-black">Urlaub</label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Arbeitsbeginn</label>
+              <label className="block text-sm font-bold text-black mb-1">Arbeitsbeginn</label>
               <input
                 type="time"
                 value={formData.startTime}
@@ -113,7 +113,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Arbeitsende</label>
+              <label className="block text-sm font-bold text-black mb-1">Arbeitsende</label>
               <input
                 type="time"
                 value={formData.endTime}
@@ -125,7 +125,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pause</label>
+            <label className="block text-sm font-bold text-black mb-1">Pause</label>
             <input
               type="time"
               value={formData.pauseTime}
@@ -136,7 +136,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bemerkungen</label>
+            <label className="block text-sm font-bold text-black mb-1">Bemerkungen</label>
             <textarea
               value={formData.remarks}
               onChange={(e) => setFormData({...formData, remarks: e.target.value})}
@@ -159,7 +159,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
           )}
 
           <div className="pt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">Abbrechen</button>
+            <button type="button" onClick={onClose} className="px-4 py-2 text-black font-bold hover:bg-gray-200 rounded-md">Abbrechen</button>
             <button type="submit" className="px-4 py-2 bg-[#ed8022] hover:bg-[#ff6d00] text-white font-medium rounded-md">Speichern</button>
           </div>
         </form>

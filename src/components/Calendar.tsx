@@ -38,7 +38,7 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
         ))}
         
         {days.length > 0 && Array.from({ length: getOffset(days[0]) }).map((_, i) => (
-          <div key={`empty-${i}`} className="bg-white p-2 min-h-[100px] opacity-50"></div>
+          <div key={`empty-${i}`} className="bg-gray-100 p-2 min-h-[100px]"></div>
         ))}
 
         {days.map(day => {
@@ -52,7 +52,7 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
               onClick={() => onDayClick(day)}
             >
               <div className="flex justify-between items-start">
-                <span className="font-medium text-gray-700">{format(day, "d")}</span>
+                <span className="font-bold text-black">{format(day, "d")}</span>
                 {entry && entry.isVacation && (
                   <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Urlaub</span>
                 )}

@@ -104,7 +104,7 @@ export default function AdminUserDashboard() {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold font-[Poppins]">Admin: {targetUserName}</h1>
-            <p className="text-sm opacity-80">Zeiten einsehen & bearbeiten</p>
+            <p className="text-sm">Zeiten einsehen & bearbeiten</p>
           </div>
           <Link href="/admin" className="px-4 py-2 bg-white text-[#123e7f] rounded shadow-sm text-sm font-medium hover:bg-gray-50">
             Zurück zur Übersicht
@@ -135,7 +135,7 @@ export default function AdminUserDashboard() {
             <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalTarget)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#ed8022]">
-            <div className="text-sm font-semibold uppercase opacity-70 text-[#ed8022]">Überstunden Monat</div>
+            <div className="text-sm font-bold uppercase text-[#ed8022]">Überstunden Monat</div>
             <div className={`text-2xl font-bold font-[Poppins] ${totalDiff >= 0 ? "text-green-600" : "text-red-600"}`}>
               {totalDiff > 0 ? "+" : ""}{formatTime(totalDiff)} h
             </div>

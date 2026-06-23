@@ -88,7 +88,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold font-[Poppins]">MERDIC Construction</h1>
-            <p className="text-sm opacity-80">Hallo, {session.user?.name}</p>
+            <p className="text-sm">Hallo, {session.user?.name}</p>
           </div>
           <div className="flex gap-4 items-center">
             {/* @ts-ignore */}
@@ -97,7 +97,7 @@ export default function Dashboard() {
                 Admin Bereich
               </button>
             )}
-            <button onClick={() => signOut()} className="text-sm opacity-80 hover:opacity-100">Abmelden</button>
+            <button onClick={() => signOut()} className="text-sm font-medium hover:underline">Abmelden</button>
           </div>
         </div>
       </header>
@@ -125,7 +125,7 @@ export default function Dashboard() {
             <div className="text-2xl font-bold font-[Poppins]">{formatTime(totalTarget)} h</div>
           </div>
           <div className="bg-white p-4 rounded-xl shadow-sm border-t-4 border-[#ed8022]">
-            <div className="text-sm font-semibold uppercase opacity-70 text-[#ed8022]">Überstunden Monat</div>
+            <div className="text-sm font-bold uppercase text-[#ed8022]">Überstunden Monat</div>
             <div className={`text-2xl font-bold font-[Poppins] ${totalDiff >= 0 ? "text-green-600" : "text-red-600"}`}>
               {totalDiff > 0 ? "+" : ""}{formatTime(totalDiff)} h
             </div>

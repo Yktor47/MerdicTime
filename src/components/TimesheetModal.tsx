@@ -13,6 +13,7 @@ interface TimesheetEntry {
   workHours: number;
   diffHours: number;
   isVacation: boolean;
+  isSick: boolean;
   isConfirmed: boolean;
   remarks: string;
 }
@@ -41,6 +42,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
     workHours: existingEntry?.workHours || 0,
     diffHours: existingEntry?.diffHours || 0,
     isVacation: existingEntry?.isVacation || false,
+    isSick: existingEntry?.isSick || false,
     isConfirmed: existingEntry?.isConfirmed || false,
     remarks: existingEntry?.remarks || "",
   });
@@ -54,7 +56,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
   useEffect(() => {
     let workHours = 0;
 
-    if (formData.isVacation) {
+    if (formData.isVacation || formData.isSick) {
       workHours = formData.targetHours;
     } else {
       const start = parseTime(formData.startTime);
@@ -74,12 +76,22 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
       workHours,
       diffHours
     }));
-  }, [formData.startTime, formData.endTime, formData.pauseTime, formData.isVacation, formData.targetHours]);
+  }, [formData.startTime, formData.endTime, formData.pauseTime, formData.isVacation, formData.isSick, formData.targetHours]);
+
+  const handleVacationChange = (checked: boolean) => {
+    setFormData({ ...formData, isVacation: checked, isSick: checked ? false : formData.isSick });
+  };
+
+  const handleSickChange = (checked: boolean) => {
+    setFormData({ ...formData, isSick: checked, isVacation: checked ? false : formData.isVacation });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
   };
+
+  const isAbsent = formData.isVacation || formData.isSick;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -90,15 +102,27 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <input 
-              type="checkbox" 
-              id="isVacation" 
-              checked={formData.isVacation}
-              onChange={(e) => setFormData({...formData, isVacation: e.target.checked})}
-              className="w-4 h-4 accent-[#ed8022]"
-            />
-            <label htmlFor="isVacation" className="font-bold text-black">Urlaub</label>
+          <div className="flex items-center gap-6 mb-4">
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="isVacation" 
+                checked={formData.isVacation}
+                onChange={(e) => handleVacationChange(e.target.checked)}
+                className="w-4 h-4 accent-[#ed8022]"
+              />
+              <label htmlFor="isVacation" className="font-bold text-black">Urlaub</label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                id="isSick" 
+                checked={formData.isSick}
+                onChange={(e) => handleSickChange(e.target.checked)}
+                className="w-4 h-4 accent-[#dc2626]"
+              />
+              <label htmlFor="isSick" className="font-bold text-black">Krank</label>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -108,7 +132,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
                 type="time"
                 value={formData.startTime}
                 onChange={(e) => setFormData({...formData, startTime: e.target.value})}
-                disabled={formData.isVacation}
+                disabled={isAbsent}
                 className="w-full p-2 border border-gray-300 rounded-md text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#ed8022] disabled:bg-gray-200 disabled:text-gray-900"
               />
             </div>
@@ -118,7 +142,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
                 type="time"
                 value={formData.endTime}
                 onChange={(e) => setFormData({...formData, endTime: e.target.value})}
-                disabled={formData.isVacation}
+                disabled={isAbsent}
                 className="w-full p-2 border border-gray-300 rounded-md text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#ed8022] disabled:bg-gray-200 disabled:text-gray-900"
               />
             </div>
@@ -130,7 +154,7 @@ export default function TimesheetModal({ date, existingEntry, onClose, onSave, i
               type="time"
               value={formData.pauseTime}
               onChange={(e) => setFormData({...formData, pauseTime: e.target.value})}
-              disabled={formData.isVacation}
+              disabled={isAbsent}
               className="w-full p-2 border border-gray-300 rounded-md text-black font-medium focus:outline-none focus:ring-2 focus:ring-[#ed8022] disabled:bg-gray-200 disabled:text-gray-900"
             />
           </div>

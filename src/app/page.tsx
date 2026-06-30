@@ -91,6 +91,9 @@ export default function Dashboard() {
             <p className="text-sm">Hallo, {session.user?.name}</p>
           </div>
           <div className="flex gap-4 items-center">
+            <button onClick={() => router.push("/overview")} className="px-3 py-1 bg-[#ed8022] text-white rounded font-medium text-sm hover:bg-[#ff6d00] transition-colors">
+              Übersicht
+            </button>
             {/* @ts-ignore */}
             {session.user?.role === "ADMIN" && (
               <button onClick={() => router.push("/admin")} className="px-3 py-1 bg-white text-[#123e7f] rounded font-medium text-sm">

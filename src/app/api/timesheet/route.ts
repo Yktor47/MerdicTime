@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { date, startTime, endTime, pauseTime, targetHours, workHours, diffHours, isVacation, isConfirmed, remarks, userId } = body;
+  const { date, startTime, endTime, pauseTime, targetHours, workHours, diffHours, isVacation, isSick, isConfirmed, remarks, userId } = body;
 
   const targetUserId = userId || (session.user as any).id;
 
@@ -67,6 +67,7 @@ export async function POST(req: Request) {
       workHours,
       diffHours,
       isVacation,
+      isSick,
       isConfirmed,
       remarks,
     },
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
       workHours,
       diffHours,
       isVacation,
+      isSick,
       isConfirmed,
       remarks,
     },

@@ -27,6 +27,7 @@ model TimesheetEntry {
   workHours    Int      // in minutes
   diffHours    Int      // in minutes
   isVacation   Boolean  @default(false)
+  isSick       Boolean  @default(false)
   isConfirmed  Boolean  @default(false)
   remarks      String?
 

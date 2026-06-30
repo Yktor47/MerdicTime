@@ -56,8 +56,11 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
                 {entry && entry.isVacation && (
                   <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Urlaub</span>
                 )}
+                {entry && entry.isSick && (
+                  <span className="text-xs bg-red-100 text-red-800 px-1 rounded">Krank</span>
+                )}
               </div>
-              {entry && !entry.isVacation && entry.workHours > 0 && (
+              {entry && !entry.isVacation && !entry.isSick && entry.workHours > 0 && (
                 <div className="mt-2 text-sm text-[#123e7f] font-[Poppins]">
                   <div>{formatTime(entry.workHours)}h gearbeitet</div>
                   {entry.diffHours !== 0 && (

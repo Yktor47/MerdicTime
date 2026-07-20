@@ -8,28 +8,38 @@ datasource db {
 }
 
 model User {
-  id           String           @id @default(cuid())
-  username     String           @unique
-  passwordHash String
-  role         String           @default("USER") // "USER" or "ADMIN"
-  entries      TimesheetEntry[]
+  id                  String           @id @default(cuid())
+  username            String           @unique
+  passwordHash        String
+  role                String           @default("USER") // "USER" or "ADMIN"
+  vacationDaysPerYear Int              @default(30)
+  entries             TimesheetEntry[]
 }
 
 model TimesheetEntry {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date         String   // ISO format YYYY-MM-DD
-  startTime    String?
-  endTime      String?
-  pauseTime    String?
-  targetHours  Int      // in minutes
-  workHours    Int      // in minutes
-  diffHours    Int      // in minutes
-  isVacation   Boolean  @default(false)
-  isSick       Boolean  @default(false)
-  isConfirmed  Boolean  @default(false)
-  remarks      String?
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date              String   // ISO format YYYY-MM-DD
+  startTime         String?
+  endTime           String?
+  pauseTime         String?
+  targetHours       Int      // in minutes
+  workHours         Int      // in minutes
+  diffHours         Int      // in minutes
+  isVacation        Boolean  @default(false)
+  vacationConfirmed Boolean  @default(false)
+  isSick            Boolean  @default(false)
+  isConfirmed       Boolean  @default(false)
+  remarks           String?
+  // GPS fields
+  startLat          Float?
+  startLng          Float?
+  endLat            Float?
+  endLng            Float?
+  // Clock-in/out timestamps
+  clockInTime       String?
+  clockOutTime      String?
 
   @@unique([userId, date])
 }

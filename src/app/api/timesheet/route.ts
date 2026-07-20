@@ -43,7 +43,11 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { date, startTime, endTime, pauseTime, targetHours, workHours, diffHours, isVacation, isSick, isConfirmed, remarks, userId } = body;
+  const {
+    date, startTime, endTime, pauseTime, targetHours, workHours, diffHours,
+    isVacation, vacationConfirmed, isSick, isConfirmed, remarks, userId,
+    startLat, startLng, endLat, endLng, clockInTime, clockOutTime
+  } = body;
 
   const targetUserId = userId || (session.user as any).id;
 
@@ -52,6 +56,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Only admin can confirm vacations
+  const isAdmin = (session.user as any).role === "ADMIN";
+  const finalVacationConfirmed = isAdmin ? (vacationConfirmed ?? false) : false;
+
+  const entryData = {
+    startTime,
+    endTime,
+    pauseTime,
+    targetHours,
+    workHours,
+    diffHours,
+    isVacation,
+    vacationConfirmed: isVacation ? finalVacationConfirmed : false,
+    isSick,
+    isConfirmed,
+    remarks,
+    startLat: startLat ?? null,
+    startLng: startLng ?? null,
+    endLat: endLat ?? null,
+    endLng: endLng ?? null,
+    clockInTime: clockInTime ?? null,
+    clockOutTime: clockOutTime ?? null,
+  };
+
   const entry = await prisma.timesheetEntry.upsert({
     where: {
       userId_date: {
@@ -59,31 +87,11 @@ export async function POST(req: Request) {
         date: date,
       },
     },
-    update: {
-      startTime,
-      endTime,
-      pauseTime,
-      targetHours,
-      workHours,
-      diffHours,
-      isVacation,
-      isSick,
-      isConfirmed,
-      remarks,
-    },
+    update: entryData,
     create: {
       userId: targetUserId,
       date,
-      startTime,
-      endTime,
-      pauseTime,
-      targetHours,
-      workHours,
-      diffHours,
-      isVacation,
-      isSick,
-      isConfirmed,
-      remarks,
+      ...entryData,
     },
   });
 

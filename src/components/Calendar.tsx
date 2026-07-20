@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, isSameDay } from "date-fns";
-import { de } from "date-fns/locale";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from "date-fns";
 
 interface CalendarProps {
   currentMonth: Date;
@@ -21,8 +20,6 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
 
   const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-  // Offset for the first day of the month (0 = Sunday, 1 = Monday, etc.)
-  // We want Monday = 0, Sunday = 6
   const getOffset = (date: Date) => {
     const day = getDay(date);
     return day === 0 ? 6 : day - 1;
@@ -44,6 +41,7 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
         {days.map(day => {
           const formattedDate = format(day, "yyyy-MM-dd");
           const entry = entries.find(e => e.date === formattedDate);
+          const hasGps = entry && (entry.startLat || entry.endLat);
           
           return (
             <div 
@@ -51,20 +49,28 @@ export default function Calendar({ currentMonth, entries, onDayClick }: Calendar
               className="bg-white p-2 min-h-[100px] cursor-pointer hover:bg-[#f5f8ff] transition-colors border border-transparent hover:border-[#ed8022]"
               onClick={() => onDayClick(day)}
             >
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start gap-1">
                 <span className="font-bold text-black">{format(day, "d")}</span>
-                {entry && entry.isVacation && (
-                  <span className="text-xs bg-green-100 text-green-800 px-1 rounded">Urlaub</span>
-                )}
-                {entry && entry.isSick && (
-                  <span className="text-xs bg-red-100 text-red-800 px-1 rounded">Krank</span>
-                )}
+                <div className="flex flex-col gap-0.5 items-end">
+                  {entry && entry.isVacation && entry.vacationConfirmed && (
+                    <span className="text-[10px] bg-green-100 text-green-800 px-1.5 py-0.5 rounded font-semibold">✓ Urlaub</span>
+                  )}
+                  {entry && entry.isVacation && !entry.vacationConfirmed && (
+                    <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded font-semibold">⏳ Urlaub</span>
+                  )}
+                  {entry && entry.isSick && (
+                    <span className="text-[10px] bg-red-100 text-red-800 px-1.5 py-0.5 rounded font-semibold">Krank</span>
+                  )}
+                  {hasGps && (
+                    <span className="text-[10px] text-gray-400">📍</span>
+                  )}
+                </div>
               </div>
               {entry && !entry.isVacation && !entry.isSick && entry.workHours > 0 && (
-                <div className="mt-2 text-sm text-[#123e7f] font-[Poppins]">
-                  <div>{formatTime(entry.workHours)}h gearbeitet</div>
+                <div className="mt-1 text-sm text-[#123e7f] font-[Poppins]">
+                  <div>{formatTime(entry.workHours)}h</div>
                   {entry.diffHours !== 0 && (
-                    <div className={entry.diffHours > 0 ? "text-green-600" : "text-red-600"}>
+                    <div className={`text-xs ${entry.diffHours > 0 ? "text-green-600" : "text-red-600"}`}>
                       {entry.diffHours > 0 ? "+" : ""}{formatTime(entry.diffHours)}h
                     </div>
                   )}

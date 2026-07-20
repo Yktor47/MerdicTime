@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
 import Calendar from "@/components/Calendar";
 import TimesheetModal from "@/components/TimesheetModal";
@@ -15,6 +15,14 @@ export default function Dashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [entries, setEntries] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  
+  // Clock state
+  const [clockStatus, setClockStatus] = useState<"idle" | "clocked_in" | "clocked_out">("idle");
+  const [clockLoading, setClockLoading] = useState(false);
+  const [clockMessage, setClockMessage] = useState("");
+  const [gpsStatus, setGpsStatus] = useState("");
+  const [clockInTimestamp, setClockInTimestamp] = useState<string | null>(null);
+  const [elapsedTime, setElapsedTime] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -22,23 +30,109 @@ export default function Dashboard() {
     }
   }, [status, router]);
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     if (!session) return;
     const monthStr = format(currentMonth, "yyyy-MM");
     const res = await fetch(`/api/timesheet?month=${monthStr}`);
     if (res.ok) {
       const data = await res.json();
       setEntries(data);
+      
+      // Check today's clock status
+      const todayStr = format(new Date(), "yyyy-MM-dd");
+      const todayEntry = data.find((e: any) => e.date === todayStr);
+      if (todayEntry?.clockInTime && todayEntry?.clockOutTime) {
+        setClockStatus("clocked_out");
+        setClockInTimestamp(todayEntry.clockInTime);
+      } else if (todayEntry?.clockInTime) {
+        setClockStatus("clocked_in");
+        setClockInTimestamp(todayEntry.clockInTime);
+      } else {
+        setClockStatus("idle");
+        setClockInTimestamp(null);
+      }
     }
-  };
+  }, [currentMonth, session]);
 
   useEffect(() => {
     fetchEntries();
-  }, [currentMonth, session]);
+  }, [fetchEntries]);
+
+  // Elapsed time ticker
+  useEffect(() => {
+    if (clockStatus !== "clocked_in" || !clockInTimestamp) {
+      setElapsedTime("");
+      return;
+    }
+
+    const tick = () => {
+      const start = new Date(clockInTimestamp).getTime();
+      const now = Date.now();
+      const diff = Math.max(0, Math.floor((now - start) / 1000));
+      const h = Math.floor(diff / 3600);
+      const m = Math.floor((diff % 3600) / 60);
+      const s = diff % 60;
+      setElapsedTime(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [clockStatus, clockInTimestamp]);
 
   if (status === "loading" || !session) {
     return <div className="p-8 text-center">Loading...</div>;
   }
+
+  const handleClock = async (action: "in" | "out") => {
+    setClockLoading(true);
+    setGpsStatus("📍 Standort wird ermittelt...");
+    setClockMessage("");
+
+    const getPosition = (): Promise<{ lat: number; lng: number } | null> => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          setGpsStatus("⚠️ GPS nicht verfügbar");
+          resolve(null);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setGpsStatus("📍 Standort erfasst");
+            resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+          () => {
+            setGpsStatus("⚠️ Standort konnte nicht ermittelt werden");
+            resolve(null);
+          },
+          { enableHighAccuracy: true, timeout: 10000 }
+        );
+      });
+    };
+
+    const coords = await getPosition();
+
+    const res = await fetch("/api/timesheet/clock", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, lat: coords?.lat, lng: coords?.lng }),
+    });
+
+    const data = await res.json();
+    
+    if (res.ok) {
+      setClockMessage(data.message);
+      if (action === "in") {
+        setClockStatus("clocked_in");
+        setClockInTimestamp(data.entry.clockInTime);
+      } else {
+        setClockStatus("clocked_out");
+      }
+      fetchEntries();
+    } else {
+      setClockMessage(data.error || "Fehler");
+    }
+    setClockLoading(false);
+  };
 
   const handleSaveEntry = async (entry: any) => {
     const res = await fetch("/api/timesheet", {
@@ -54,13 +148,15 @@ export default function Dashboard() {
 
   const handleExport = () => {
     const data = [];
-    data.push(["Datum", "Arbeitsbeginn", "Arbeitsende", "Pause", "Soll-Zeit (Min)", "Arbeitszeit (Min)", "Differenz (Min)", "Urlaub", "Bestätigt", "Bemerkungen"]);
+    data.push(["Datum", "Arbeitsbeginn", "Arbeitsende", "Pause", "Soll-Zeit (Min)", "Arbeitszeit (Min)", "Differenz (Min)", "Urlaub", "Urlaub bestätigt", "Krank", "Bestätigt", "Bemerkungen"]);
     
     entries.forEach(e => {
       data.push([
         e.date, e.startTime, e.endTime, e.pauseTime, 
         e.targetHours, e.workHours, e.diffHours, 
-        e.isVacation ? "Ja" : "Nein", 
+        e.isVacation ? "Ja" : "Nein",
+        e.vacationConfirmed ? "Ja" : "Nein",
+        e.isSick ? "Ja" : "Nein",
         e.isConfirmed ? "Ja" : "Nein", 
         e.remarks
       ]);
@@ -106,6 +202,58 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-6xl mx-auto p-4 py-8">
+        {/* Clock In/Out Section */}
+        <div className="bg-white rounded-xl shadow-md border-t-4 border-[#ed8022] p-6 mb-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="text-center md:text-left">
+              <h2 className="text-lg font-bold text-[#123e7f] font-[Poppins]">Zeiterfassung</h2>
+              <p className="text-sm text-gray-500">{format(new Date(), "dd.MM.yyyy")}</p>
+              {clockStatus === "clocked_in" && elapsedTime && (
+                <div className="mt-2">
+                  <span className="text-xs text-gray-500 uppercase font-bold">Arbeitszeit</span>
+                  <div className="text-3xl font-black text-[#123e7f] font-[Poppins] tabular-nums">{elapsedTime}</div>
+                </div>
+              )}
+              {clockStatus === "clocked_out" && (
+                <div className="mt-2 text-sm text-green-600 font-medium">✅ Arbeit für heute beendet</div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleClock("in")}
+                  disabled={clockLoading || clockStatus === "clocked_in" || clockStatus === "clocked_out"}
+                  className={`px-6 py-3 rounded-xl font-bold text-white transition-all shadow-md ${
+                    clockStatus === "idle" && !clockLoading
+                      ? "bg-green-500 hover:bg-green-600 hover:scale-105 hover:shadow-lg"
+                      : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  ▶ Arbeit starten
+                </button>
+                <button
+                  onClick={() => handleClock("out")}
+                  disabled={clockLoading || clockStatus !== "clocked_in"}
+                  className={`px-6 py-3 rounded-xl font-bold text-white transition-all shadow-md ${
+                    clockStatus === "clocked_in" && !clockLoading
+                      ? "bg-red-500 hover:bg-red-600 hover:scale-105 hover:shadow-lg"
+                      : "bg-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  ⏹ Arbeit beenden
+                </button>
+              </div>
+              {gpsStatus && <span className="text-xs text-gray-500">{gpsStatus}</span>}
+              {clockMessage && (
+                <span className={`text-sm font-medium ${clockMessage.includes("Fehler") || clockMessage.includes("Bereits") || clockMessage.includes("Nicht") ? "text-red-600" : "text-green-600"}`}>
+                  {clockMessage}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
         <div className="flex justify-between items-center mb-6">
           <input 
             type="month" 
